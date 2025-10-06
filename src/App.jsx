@@ -485,7 +485,7 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 		setLog(newLog);
 		setStep(nextStep);
 		setIsPaused(false);
-		showAnimations(true);
+		setShowAnimations(true);
 		  
 		setBoardState(oldBoardState => {
 			const newBoardState = {
