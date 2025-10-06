@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  --animate-wiggle: wiggle 5s ease-in-out infinite;
+  @keyframes wiggle {
+    0% {
+	  fill: transparent;
+	}
+    100% {	  
+      transform: rotate(-0deg);
+	  fill: transparent;
+    }
+    75% {
+      transform: rotate(-45deg);
+    }
+    50% {
+      transform: rotate(0deg);
+	  fill: var(--color-yellow-600);
+    }
+    25% {
+      transform: rotate(45deg);
+    }
+	10%,90% {
+	  fill: var(--color-yellow-200);
+	}
+	20%,80% {
+	  fill: var(--color-yellow-300);
+	}
+	30%,70% {
+	  fill: var(--color-yellow-400);
+	}
+	40%,60% {
+	  fill: var(--color-yellow-500);
+	}
+  }
+  
+  --animate-grow-up: grow-up 0.5s cubic-bezier(0.4, 0, 0.6, 0.5) forwards;
+  @keyframes grow-up {
+	0% {
+      transform:  scale(0.5);
+    }
+	100% {
+	  transform:  scale(1);
+	}
+  }
+
+  
+  --animate-invert-x: invert-x 3.5s cubic-bezier(0.4, 0, 0.6, 0.5) infinite;
+  @keyframes invert-x {
+	50% {
+      transform:  scaleX(-1) translate(0.30rem);
+    }
+  }
+  
+  --animate-rotate-180: rotate-180 2s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+  @keyframes rotate-180 {
+	to {
+      transform:  rotate(180deg);
+    }
+  }
+
+  --animate-scale-70: scale-70 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  @keyframes scale-70 {
+    50% {
+	  transform: scale(0.7);
+    }
+	0%, 100% {
+      transform: scale(1);
+    }
+  }
+  --animate-blink: blink 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  @keyframes blink {
+	50% {
+	  opacity: 0;
+	}
+    0%, 100% {
+      opacity: 1;
+    }
+  }
+}
