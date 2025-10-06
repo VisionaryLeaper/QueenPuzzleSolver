@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Crown, X, Search, CircleDashed, 
 		MousePointerClick, MousePointer2, Asterisk,
-		BadgeQuestionMark, Undo2, Redo2,
+		BadgeQuestionMark, Undo2, Redo2, ZoomIn, ZoomOut,
 		MessageCircleX, Lightbulb, Languages, CirclePause, Play, CirclePlay, MonitorPause,
 		Hourglass, ListChevronsDownUp, ListChevronsUpDown } from 'lucide-react';
 import './App.css'
@@ -26,7 +26,7 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 	const [isMousePressedOnBoard, setIsMousePressedOnBoard] = useState(false);
 	const [autoAddX, setAutoAddX] = useState(true);
 	const [showMenu, setShowMenu] = useState(true);
-	const [showAxes, setShowAxes] = useState(true);
+	const [showAxes, setShowAxes] = useState(false);
 	const [showAnimations, setShowAnimations] = useState(true);
 	const [showTimer, setShowTimer] = useState(true);
 	const [showLetter, setShowLetter] = useState(true);
@@ -44,21 +44,8 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 	let cellsOnHovering = null;
 	
 	const divBoard = useRef(null);
-	
+		
     const divLogHistory = useRef(null);
-
-	// Prevent Scroll
-	useEffect(() => {
-		const preventScroll = (e) => e.preventDefault();
-
-		const element = divBoard.current;
-		element.addEventListener("touchmove", preventScroll, { passive: false });
-
-		// Cleanup to avoid memory leaks
-		return () => {
-		  element.removeEventListener("touchmove", preventScroll);
-		};
-	  }, []);	
 
 	const handleMouseDown = (event) => {
 		setIsMovedOutPos(false)
@@ -359,15 +346,18 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 			}
 	  });
     };
-		
+
 	const handleTouchMove = (event) => {
 		const touch = event.touches[0]; // Get the first touch point
-		const element = document.elementFromPoint(touch.clientX, touch.clientY);
+		
+		if (touch) {
+			const element = document.elementFromPoint(touch.clientX, touch.clientY);
 
-		if (element && !(element.dataset.divCol == currentDivCol && element.dataset.divRow == currentDivRow) && element.dataset.divRow && element.dataset.divCol) {
-		  setCurrentDivRow(element.dataset.divRow);
-		  setCurrentDivCol(element.dataset.divCol);
-		  handleMouseEnterOut({buttons:addXOnHover ? 1 : 2, e: "touchMove"}, element.dataset.divRow, element.dataset.divCol)      
+			if (element && !(element.dataset.divCol == currentDivCol && element.dataset.divRow == currentDivRow) && element.dataset.divRow && element.dataset.divCol) {
+			  setCurrentDivRow(element.dataset.divRow);
+			  setCurrentDivCol(element.dataset.divCol);
+			  handleMouseEnterOut({buttons:addXOnHover ? 1 : 2, e: "touchMove"}, element.dataset.divRow, element.dataset.divCol)      
+			}
 		}
 	};
 
@@ -429,6 +419,9 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 		return () => clearInterval(timer);
 	}, [isWinner, isPaused]);
   
+	// Prevent Scroll
+
+	  
 	// Salvar no localStorage quando sair
 	useEffect(() => {
 	  const saveState = () => {
@@ -486,6 +479,7 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 		setStep(nextStep);
 		setIsPaused(false);
 		setShowAnimations(true);
+		setShowAxes(true);
 		  
 		setBoardState(oldBoardState => {
 			const newBoardState = {
@@ -531,6 +525,7 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 		setLog(newLog);
 		setStep(previousStep);
 		setIsPaused(false);
+		setShowAxes(true);
 			
 		setBoardState(oldBoardState => {
 			const newBoardState = {
@@ -740,18 +735,22 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 		}		
 	}
 
+
     return (	
       <div className="grid grid-cols-1 place-items-center p-6 max-w-6xl mx-auto overflow-clip min-h-full min-w-md" onMouseUp={handleMouseUp}>
 		{/* Main Title */}
 		{<div className="flex justify-between items-center mb-4 w-full">
           <button 
             onClick={() => setShowMenu(!showMenu)}
+			arial-label={language === 'pt' ? (showMenu ? 'Ocultar menu' : "Mostrar menu") : (showMenu ? 'Hide menu' : "Show menu")}
+			title={language === 'pt' ? (showMenu ? 'Ocultar menu' : "Mostrar menu") : (showMenu ? 'Hide menu' : "Show menu")}
             className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center gap-2"
           >
 		    {showMenu ? <ListChevronsDownUp size={24} /> : <ListChevronsUpDown size={24} /> }
           </button>
 		  <div className="flex items-center justify-center">
 			<img
+				title="Queen Puzzle Solver"
 				src="/QueenPuzzleSover.png"
 				className="w-14 h-14 m-2"
 			/>
@@ -759,6 +758,8 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 		  </div>
           <button 
             onClick={toggleLanguage}
+			arial-label={language === 'pt' ? 'English' : 'Português'}
+			title={language === 'pt' ? 'Idioma' : 'Language'}
             className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center gap-2"
           >
             <Languages size={20} />
@@ -770,6 +771,7 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 		{showMenu && (
         <div className="mb-4 flex gap-2 justify-center flex-wrap">
           <button 
+		    title={language === 'pt' ? 'Mostrar dicas' : 'Show hints'}
             onClick={() => setShowHints(!showHints)}
             className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 flex items-center gap-2"
           >
@@ -778,6 +780,7 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
           </button>
 		  
           <button 
+		    title={language === 'pt' ? 'Voltar para etapa anterior da solução passo a passo' : 'Return to the previous step of the step-by-step solution'}
             onClick={prevStep}
             disabled={step === 0}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -785,6 +788,7 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
             ← {language === 'pt' ? 'Voltar' : 'Back'}
           </button>
           <button 
+		    title={language === 'pt' ? 'Avançar para próxima etapa da solução passo a passo' : 'Move to the next step of the step-by-step solution'}
             onClick={nextStep}
             disabled={step >= solutionSteps.length - 1}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -792,6 +796,7 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
             {language === 'pt' ? 'Próximo Passo' : 'Next Step'} →
           </button>
           <button 
+			title={language === 'pt' ? 'Reiniciar tudo' : 'Reset everything'}
             onClick={reset}
             className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
           >
@@ -861,6 +866,10 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 			onTouchStart={handleMouseDown}
 			onMouseUp={handleMouseUp}
 			onTouchEnd={handleMouseUp}
+			style = {{
+				touchAction: 'none',
+				overscrollBehavior: 'contain',
+			}}
 		>
 				
 			<div className={`${showAxes ? "ml-8 ": "mb-2 " }text-sm font-semibold flex justify-end`}>
@@ -869,10 +878,11 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 					<button 
 						onClick={undoMove}
 						arial-label={language === 'pt' ? 'Desfazer' : 'Undo'}
+						title={language === 'pt' ? 'Desfazer' : 'Undo'}
 						disabled={boardState.undo.length === 0 || isPaused}
 						className={`mr-4 px-2 py-2 text-white rounded flex items-center gap-1 ${
-								boardState.undo.length === 0 || isPaused ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-700"
-							}`}
+							boardState.undo.length === 0 || isPaused ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-700"}
+						`}
 					>
 						<Undo2 size={15} />						
 					</button>	
@@ -881,10 +891,11 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 					<button 
 						disabled={isPaused}
 						arial-label={language === 'pt' ? 'Refazer' : 'Redo'}
+						title={language === 'pt' ? 'Refazer' : 'Redo'}
 						onClick={redoMove}
 						className={`"mr-auto px-2 py-2 text-white rounded flex items-center gap-1 ${
-							isPaused? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-700"
-						}`}
+							isPaused? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-700"}`
+						}
 					>
 						<Redo2 size={15} />						
 					</button>)}
@@ -895,6 +906,8 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 					{isWinner ? <span onClick={() => setIsWinner(1)} className="mr-1">🏆🏆🏆</span> : 
 					<div className="flex items-center">
 						<button
+							arial-label={language === 'pt' ? 'Limpar tabuleiro' : 'Clear board'}
+							title={language === 'pt' ? 'Limpar tabuleiro' : 'Clear board'}
 							disabled={isPaused}
 							onClick={clearBoard}
 							className={`px-4 py-2 mr-4 text-white rounded ${boardState.needClearBoard ? "" : "hidden"} ${
@@ -905,7 +918,9 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 						</button>
 					
 						<button
-							 onClick={()=>setIsPaused(!isPaused)}
+							arial-label={language === 'pt' ? (!isPaused ? 'Pausar o jogo' : 'Continuar o jogo') : (!isPaused ? 'Pause the game' : 'Continue the game')}
+							title={language === 'pt' ? (!isPaused ? 'Pausar o jogo' : 'Continuar o jogo') : (!isPaused ? 'Pause the game' : 'Continue the game')}
+							onClick={()=>setIsPaused(!isPaused)}
 						>
 							{isPaused ? <CirclePlay className="w-4 h-4 text-green-400 hover:text-green-600 mr-1"/> : <CirclePause className="w-4 h-4 text-red-500 hover:text-red-600 mr-1"/>}
 						</button>
@@ -929,7 +944,7 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 					{["A","B","C","D","E","F","G","H","I","J","K"][colIndex]}
 				</div>
 				))}
-			</div>)}
+			</div>)}	
           
 			<div className="flex">
 				{showAxes && (
@@ -978,6 +993,8 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 						</div>
 						<div className="flex w-full h-1/3 justify-end items-center">
 							<button
+								arial-label={language === 'pt' ? (!isPaused ? 'Pausar o jogo' : 'Continuar o jogo') : (!isPaused ? 'Pause the game' : 'Continue the game')}
+								title={language === 'pt' ? (!isPaused ? 'Pausar o jogo' : 'Continuar o jogo') : (!isPaused ? 'Pause the game' : 'Continue the game')}
 								onClick={() => setIsPaused(false)}
 								className="bg-white border-2 border-gray-400"
 								style={{
@@ -995,6 +1012,10 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 				{<div 
 					className={`border-4 border-gray-800 ${isPaused ? "hidden" : ""}`} 
 					onTouchMove={handleTouchMove}
+					style = {{
+						touchAction: 'none',
+						overscrollBehavior:'contain',
+					}}
 				>
 					{board.map((row, rowIndex) => (
 						<div key={rowIndex} className="flex">
@@ -1023,9 +1044,9 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 									{boardState.cells[rowIndex][colIndex] === 'wrongQueen' && (
 										<Crown className="animate-rotate-180 w-6 h-6 text-red-600" fill="currentColor" />
 									)}
-									{boardState.cells[rowIndex][colIndex] === 'x' && (
+									<div className={`${boardState.cells[rowIndex][colIndex] === 'x' ? "" : "hidden"}`}> 
 										<X className={`${showAnimations ? "animate-grow-up" : ""} w-6 h-6 text-red-600`} />
-									)}
+									</div>
 									{boardState.cells[rowIndex][colIndex] === 'search' && (
 										<Search className="animate-pulse w-6 h-6 text-[#1E3A8A]" />
 									)}
@@ -1052,6 +1073,8 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 				<div className="flex gap-2">
 					<label className="flex items-center cursor-pointer">
 						<input
+							arial-label={language === 'pt' ? (autoAddX ? 'Deastivar colocar os ❌ automaticamente' : 'Ativar colocar os ❌ automaticamente') : (autoAddX ? "Disable auto-place ❌'s" : "Enable auto-place ❌'s")}
+							title={language === 'pt' ? (autoAddX ? 'Deastivar colocar os ❌ automaticamente' : 'Ativar colocar os ❌ automaticamente') : (autoAddX ? "Disable auto-place ❌'s" : "Enable auto-place ❌'s")}
 							type="checkbox"
 							className="sr-only"
 							checked={autoAddX}
@@ -1069,12 +1092,14 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 							></div>
 						</div>			  
 					</label>
-					<label className="flex items-center cursor-pointer">{language === 'pt' ? 'Auto ❌ automático' : "Auto place ❌'s" }</label>
+					<label className="flex items-center cursor-pointer">{language === 'pt' ? 'Colocar os ❌ automaticamente' : "Auto-place ❌'s" }</label>
 				</div>
 				
 				<div className="flex gap-2">
 					<label className="flex items-center cursor-pointer">
 						<input
+							arial-label={language === 'pt' ? (showLetter ? 'Mostrar a letra da cor do bloco' : 'Mostrar a letra da cor do bloco') : (showLetter ? "Hide the block color letter" : "Show the block color letter")}
+							title={language === 'pt' ? (showLetter ? 'Mostrar a letra da cor do bloco' : 'Mostrar a letra da cor do bloco') : (showLetter ? "Hide the block color letter" : "Show the block color letter")}
 							type="checkbox"
 							className="sr-only"
 							checked={showLetter}
@@ -1092,12 +1117,14 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 							></div>			
 						</div>			  
 					</label>
-					<label className="flex items-center cursor-pointer">{language === 'pt' ? "Mostrar a letra da cor no tabuleiro" : 'Show the color letter on the board' }</label>
+					<label className="flex items-center cursor-pointer">{language === 'pt' ? "Mostrar a letra da cor do bloco" : 'Show the block color letter' }</label>
 				</div>
 				
 				<div className="flex gap-2">
 					<label className="flex items-center cursor-pointer">
 						<input
+							arial-label={language === 'pt' ? (showAxes ? 'Ocultar eixos' : 'Mostrar eixos') : (showAxes ? "Hide axes" : "Show axes")}
+							title={language === 'pt' ? (showAxes ? 'Ocultar eixos' : 'Mostrar eixos') : (showAxes ? "Hide axes" : "Show axes")}
 							type="checkbox"
 							className="sr-only"
 							checked={showAxes}
@@ -1121,6 +1148,8 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 				<div className="flex gap-2">
 					<label className="flex items-center cursor-pointer">
 						<input
+							arial-label={language === 'pt' ? (showTimer ? 'Ocultar tempo' : 'Mostrar tempo') : (showTimer ? "Hide timer" : "Show timer")}
+							title={language === 'pt' ? (showTimer ? 'Ocultar tempo' : 'Mostrar tempo') : (showTimer ? "Hide timer" : "Show timer")}
 							type="checkbox"
 							className="sr-only"
 							checked={showTimer}
@@ -1144,6 +1173,8 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 				<div className="flex gap-2">
 					<label className="flex items-center cursor-pointer">
 						<input
+							arial-label={language === 'pt' ? (showAnimations ? 'Ocultar animações' : 'Mostrar animações') : (showAnimations ? "Hide animations" : "Show animations")}
+							title={language === 'pt' ? (showAnimations ? 'Ocultar animações' : 'Mostrar animações') : (showAnimations ? "Hide animations" : "Show animations")}
 							type="checkbox"
 							className="sr-only"
 							checked={showAnimations}
@@ -1168,6 +1199,8 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 				<div className="flex gap-2">
 					<label className="flex items-center cursor-pointer">
 						<input
+							arial-label={language === 'pt' ? (addXOnHover ? "Marcar com ❌ ao deslizar o dedo na tela" : "Remover o ❌ ao deslizar o dedo na tela") : (addXOnHover ? 'Mark with ❌ by sliding your finger on the screen' : 'Remove the ❌ by sliding your finger on the screen') }
+							title={language === 'pt' ? (addXOnHover ? "Marcar com ❌ ao deslizar o dedo na tela" : "Remover o ❌ ao deslizar o dedo na tela") : (addXOnHover ? 'Mark with ❌ by sliding your finger on the screen' : 'Remove the ❌ by sliding your finger on the screen') }
 							type="checkbox"
 							className="sr-only"
 							checked={addXOnHover}
