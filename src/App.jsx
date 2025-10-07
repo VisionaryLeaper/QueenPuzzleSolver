@@ -5,6 +5,7 @@ import { Crown, X, Search, CircleDashed,
 		MessageCircleX, Lightbulb, Languages, CirclePause, Play, CirclePlay, MonitorPause,
 		Hourglass, ListChevronsDownUp, ListChevronsUpDown } from 'lucide-react';
 import './App.css'
+import Giscus from '@giscus/react';
 			
 const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
     const [boardState, setBoardState] = useState({
@@ -33,6 +34,8 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 	const [addXOnHover, setAddXOnHover] = useState(true);
 	const [isWinner, setIsWinner] = useState(0);
 	const [isPaused, setIsPaused] = useState(0);
+	const [comments, setComments] = useState([]);
+	
 	const [time, setTime] = useState({
 		hours: 0,
 		minutes: 0,
@@ -419,7 +422,32 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 		return () => clearInterval(timer);
 	}, [isWinner, isPaused]);
   
-	// Prevent Scroll
+	// Giscus 
+	useEffect( () => {
+		function handleMessage(event) {
+		  if (event.origin !== 'https://giscus.app') return;
+		  if (!(typeof event.data === 'object' && event.data.giscus)) return;
+
+		  const giscusData = event.data.giscus;
+		  if (giscusData) {
+			  try{
+				  if (giscusData.resizeHeight) {
+					  //document.getElementsByTagName("giscus-widget")[0]._iframeRef.value.style.minHeight = giscusData.resizeHeight/.8+'px'
+				  }
+				  else {
+					let size = document.getElementsByTagName("giscus-widget")[0]._iframeRef.value.style.height.replace("px","")*1 + 140;
+					if (!size || size <450) size = 450
+					//document.getElementsByTagName("giscus-widget")[0]._iframeRef.value.style.minHeight = size + 'px'
+				  }
+				  
+			  } catch (e) {
+				  console.log(e)
+			  }
+		  }
+		}
+		window.addEventListener('message', handleMessage);
+		return () => window.removeEventListener('message', handleMessage);
+	}, []);	
 
 	  
 	// Salvar no localStorage quando sair
@@ -648,6 +676,23 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
       
       return { colorCounts };
     };
+	
+	const githubComments = () => {
+		return [
+		  {
+			user: "puzzle_solver_42",
+			avatar: "👤",
+			date: "2025-01-15",
+			textPt: "Consegui resolver em 47 minutos! A dica sobre E7 e F7 foi fundamental.",
+			textEn: "Solved in 47 minutes! The hint about E7 and F7 was crucial.",
+			likes: 15,
+			url: "https://github.com/yourrepo/discussions/1#comment-123"
+		  },
+		  // ... mais comentários
+		];
+	}
+	
+	
 
     const { colorCounts } = getColorStats();
 	
@@ -1255,6 +1300,24 @@ const QueenPuzzle = ({ board, colors, hints, solutionSteps }) => {
 			{!hasTouchSupport() && (<li>{language === 'pt' ? 'Passe o mouse sobre as células com o botão direito do mouse pressionado para remover o ❌.' : 'Hover over cells with the right mouse button pressed to remove ❌.'}</li>)}		
           </ul>
         </div>
+		
+		<div className="m-auto w-full flex max-w-[640px] overflow-y-scroll scale-90">
+		<Giscus		  
+		  id="comments"
+		  repo="VisionaryLeaper/QueenPuzzleSolver"
+		  repoId="R_kgDOP9V_nw"
+		  category="Q&A"
+		  categoryId="DIC_kwDOP9V_n84CwVNF"
+		  mapping="pathname"
+		  strict="1"
+		  reactionsEnabled="1"
+		  emitMetadata="0"
+		  inputPosition="top"
+		  theme="light"
+		  lang={language}
+		  loading="lazy"
+		/>
+		</div>
 
 		{/* Dialog Victory */}
 		{Number(isWinner)===1 && (
